@@ -237,6 +237,7 @@ class InfoPage(GridLayout):
 class EpicApp(App):
     connected_user = ''
     chat = ''
+    contact = ''
     def build(self):
 
         # We are going to use screen manager, so we can add multusernamele screens

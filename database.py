@@ -18,7 +18,7 @@ def new_user(name, firstname, pseudo, password) :
              {"name" : name, 
             "firstname" : firstname, 
             "password" : password, 
-            "chats" : { "none" : "true"    #needed to make it easier for the creation of chats
+            "chats" : { pseudo : "true"    #needed to make it easier for the creation of chats
 
                 }
              }
@@ -71,6 +71,10 @@ def messageHistory(chat_id) :
     mess_chat_ref = messages_ref.child(f'{chat_id}')
     snapshot = mess_chat_ref.order_by_child('timestamp').limit_to_last(20).get() 
     return snapshot
+
+def getContacts(username) : 
+    contacts_list  =users_ref.child(f'{username}/chats').get()
+    return contacts_list
 
 #elem = messageHistory("-MmOhnrkn9utT4FchpZa")
 #print(elem)

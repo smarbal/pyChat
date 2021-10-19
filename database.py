@@ -74,7 +74,7 @@ def messageHistory(chat_id) :
 
 def getContacts(username) : 
     contacts_list  =users_ref.child(f'{username}/chats').get()
-    return contacts_list
+    return contacts_list.keys()
 
 #elem = messageHistory("-MmOhnrkn9utT4FchpZa")
 #print(elem)

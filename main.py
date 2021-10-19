@@ -163,17 +163,39 @@ class ScrollableLabel(ScrollView):
 class HomePage(BoxLayout) : 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.orientation='vertical'
+        self.box1 = BoxLayout(size_hint = (1 , .2))
+        self.box2 = BoxLayout()
+        self.contacts_grid = GridLayout(cols=3)
+        l = Label(text='Your contacts list : ', size_hint = (1 , .2))
+        self.add_widget(l)
+        self.add_widget(self.box2)
+        self.add_widget(self.box1)
+        self.box2.add_widget(self.contacts_grid)
 
-        self.search = TextInput(size_hint=(.7, .1), multiline=False)
-        self.send = Button(text="Start chat with user :", size_hint=(.3, .1))
+        self.search = TextInput( multiline=False)
+        self.send = Button(text="Start chat with user :", size_hint=(.3, 1))
 
-        self.add_widget(self.send)
-        self.add_widget(self.search) # widget #2, top right
+        self.box1.add_widget(self.send)
+        self.box1.add_widget(self.search) # widget #2, top right
 
         chat_app.contact = self.search.text
         self.send.bind(on_press=self.start_chat)
-    
-    def start_chat(self, instance) :
+        all_contacts = db.getContacts(chat_app.connected_user)
+        for elem in all_contacts : 
+            self.button = Button(text=f"{elem}", size_hint= (.8, .8))
+            self.contacts_grid.add_widget(self.button)
+            self.button.bind(on_press= partial(self.start_chat_with, f'{elem}'))
+
+    def start_chat_with(self, contact, instance) :
+        chat_app.contact = contact
+        print(contact)
+        if not db.chatExists(chat_app.contact, chat_app.connected_user) :
+            db.new_chat(chat_app.connected_user, chat_app.contact)
+        chat_app.create_chat_page()
+        chat_app.screen_manager.current = 'Chat'
+
+    def start_chat(self, instance) :   #Merge with function before didn't work 
         chat_app.contact = self.search.text
         if not db.chatExists(chat_app.contact, chat_app.connected_user) :
             db.new_chat(chat_app.connected_user, chat_app.contact)
@@ -186,8 +208,12 @@ class ChatPage(GridLayout):
 
         # We are going to use 1 column and 2 rows
         self.cols = 1
-        self.rows = 2
+        self.rows = 3
         self.bind(size=self.adjust_fields)
+
+        self.back = Button(text="Back")
+        self.back.bind(on_press=self.back_button)
+        self.add_widget(self.back)  # just take up the spot.
         # First row is going to be occupied by our scrollable label
         # We want it be take 90% of app height
         self.history = ScrollableLabel(height=Window.size[1]*0.9, size_hint_y=None)
@@ -231,9 +257,9 @@ class ChatPage(GridLayout):
     def listener(self, event):
         self.calls += 1
         if self.calls > 1 :  
-            print(event.event_type)  # can be 'put' or 'patch'
-            print(event.path)  # relative to the reference, it seems
-            print(event.data)  # new data at /reference/event.path. None if deleted
+            #print(event.event_type)  # can be 'put' or 'patch'
+            #print(event.path)  # relative to the reference, it seems
+            #print(event.data)  # new data at /reference/event.path. None if deleted
             if event.data["sender"] == chat_app.contact :   #add ?[f'-{chat_app.chat}']
                 self.incoming_message(event.data["sender"], event.data["message"])
 
@@ -277,6 +303,9 @@ class ChatPage(GridLayout):
         # Update chat history with username and message, green color for username
         self.history.update_chat_history(f'[color=20dd20]{username}[/color] > {message}')
 
+    def back_button(self, instance) :
+        chat_app.screen_manager.current = 'Home'
+        chat_app.screen_manager.remove_widget(chat_app.screen_chat)
 
 
 
@@ -345,9 +374,9 @@ class EpicApp(App):
     # call this method later
     def create_chat_page(self):
         self.chat_page = ChatPage()
-        screen = Screen(name='Chat')
-        screen.add_widget(self.chat_page)
-        self.screen_manager.add_widget(screen)
+        self.screen_chat = Screen(name='Chat')
+        self.screen_chat.add_widget(self.chat_page)
+        self.screen_manager.add_widget(self.screen_chat)
     def create_homepage(self):
         self.home_page = HomePage()
         screen = Screen(name='Home')

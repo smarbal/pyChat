@@ -31,9 +31,12 @@ def new_chat(sender, receiver) :
     }
     new_chat_ref = chats_ref.push(chat)
     chat_id = new_chat_ref.key
-  
-    users_ref.child(f'{sender}/chats').update(f"{chat_id} : true")
-    users_ref.child(f'{receiver}/chats').update(f"{chat_id} : true")
+    
+    receiver_dic = {receiver: chat_id}
+    sender_dic = { sender : chat_id} 
+    users_ref.child(f'{sender}/chats').update(receiver_dic)
+    users_ref.child(f'{receiver}/chats').update(sender_dic)
+    return chat_id
 
 
 
@@ -55,3 +58,7 @@ def user_login(username, password) :
     except : 
         pass 
     return False
+
+def chatExists(receiver, sender) : 
+    user_chats = users_ref.child(f'{sender}/chats').get()
+    return receiver in user_chats.keys() 

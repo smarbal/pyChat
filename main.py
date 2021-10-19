@@ -1,15 +1,17 @@
 import os
-from re import search
-#Added becaus of dll problems on Windows : https://github.com/kivy/kivy/issues/6335
+
+#Added because of dll problems on Windows : https://github.com/kivy/kivy/issues/6335
 os.environ["KIVY_NO_ARGS"] = "1"
 os.environ['KIVY_IMAGE'] = "pil,sdl2"
 os.environ['PATH'] += ';' + os.path.expandvars('%AppData%\\Python\\share\\glew\\bin')
 os.environ['PATH'] += ';' + os.path.expandvars('%AppData%\\Python\\share\\sdl2\\bin')
 
+
 import kivy
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 # to use buttons:
 from kivy.uix.button import Button
@@ -149,26 +151,23 @@ class ScrollableLabel(ScrollView):
 
 
 
-class HomePage(GridLayout) : 
+class HomePage(BoxLayout) : 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # We are going to use 1 column and 2 rows
-        self.cols = 2
-        self.rows = 2
+        self.search = TextInput(size_hint=(.7, .1), multiline=False)
+        self.send = Button(text="Start chat with user :", size_hint=(.3, .1))
 
-        self.search = TextInput(width=Window.size[0]*0.8, size_hint_x=None, multiline=False)
+        self.add_widget(self.send)
         self.add_widget(self.search) # widget #2, top right
 
-
-        self.send = Button(text="Start chat with user")
-        self.add_widget(self.send)
-
-        chat_app.chat = self.search.text
+        chat_app.contact = self.search.text
         self.send.bind(on_press=self.start_chat)
     
-    def start_chat(self, username) :
-        db.new_chat(chat_app.connected_user, username)
+    def start_chat(self, instance) :
+        chat_app.contact = self.search.text
+        if not db.chatExists(chat_app.contact, chat_app.connected_user) :
+            db.new_chat(chat_app.connected_user, chat_app.contact)
         chat_app.create_chat_page()
         chat_app.screen_manager.current = 'Chat'
 
@@ -202,7 +201,9 @@ class ChatPage(GridLayout):
     # Gets called when either Send button or Enter key is being pressed
     # (kivy passes button object here as well, but we don;t care about it)
     def send_message(self, _):
-        print("send a message!!!")
+        #print("send a message!!!")
+        db.new_message(chat_app.contact, chat_app.connected_user, self.new_message.text)
+
 
 
 # Simple information/error page

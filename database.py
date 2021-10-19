@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime
-
+import time 
 cred = credentials.Certificate("service_key.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://poc-chatapp-default-rtdb.europe-west1.firebasedatabase.app/'
@@ -41,14 +41,13 @@ def new_chat(sender, receiver) :
 
 
 def new_message(chat, sender, message) : 
-    now = datetime.now()
-    message = { chat : { 
+    now = time.time()
+    message = { 
         "sender" : sender, 
         "message": message, 
-        "timestamp": str(now)
-        }
+        "timestamp": now
       }
-    messages_ref.push(message)
+    messages_ref.child(chat).push(message)
 
 def user_login(username, password) : 
     user = users_ref.child(username).get()
@@ -67,3 +66,12 @@ def chatExists(receiver, sender) :
 def getChatId(sender, receiver) : 
     chatId = users_ref.child(f'{sender}/chats/{receiver}').get()
     return chatId
+
+def messageHistory(chat_id) :
+    mess_chat_ref = messages_ref.child(f'{chat_id}')
+    snapshot = mess_chat_ref.order_by_child('timestamp').limit_to_last(20).get() 
+    return snapshot
+
+#elem = messageHistory("-MmOhnrkn9utT4FchpZa")
+#print(elem)
+#print(elem["-MmOi8uZHefgpLi0LOO_"])

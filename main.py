@@ -214,6 +214,16 @@ class ChatPage(GridLayout):
         
         chat_app.chat = db.getChatId(chat_app.connected_user, chat_app.contact)[1:]
         self.calls = 0
+
+        message_list = db.messageHistory(chat_app.chat)
+        if message_list : 
+            for message in message_list: 
+                if message_list[message]["sender"] == chat_app.connected_user : 
+                    self.history.update_chat_history(f'[color=dd2020]{chat_app.connected_user}[/color] > {message_list[message]["message"]}')
+                else : 
+                    self.history.update_chat_history(f'[color=20dd20]{chat_app.connected_user}[/color] > {message_list[message]["message"]}')
+
+
         db.messages_ref.listen(self.listener)
     # Gets called when either Send button or Enter key is being pressed
     # (kivy passes button object here as well, but we don;t care about it)
@@ -224,7 +234,7 @@ class ChatPage(GridLayout):
             print(event.event_type)  # can be 'put' or 'patch'
             print(event.path)  # relative to the reference, it seems
             print(event.data)  # new data at /reference/event.path. None if deleted
-            if event.data[chat_app.chat]["sender"] == chat_app.contact : 
+            if event.data["sender"] == chat_app.contact :   #add ?[f'-{chat_app.chat}']
                 self.incoming_message(event.data[chat_app.chat]["sender"], event.data[chat_app.chat]["message"])
 
     def send_message(self, _):

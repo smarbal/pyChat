@@ -212,7 +212,7 @@ class ChatPage(GridLayout):
         Clock.schedule_once(self.focus_text_input, 1)
         #socket_client.start_listening(self.incoming_message, show_error)
         
-        chat_app.chat = db.getChatId(chat_app.connected_user, chat_app.contact)
+        chat_app.chat = db.getChatId(chat_app.connected_user, chat_app.contact)[1:]
         self.calls = 0
         db.messages_ref.listen(self.listener)
     # Gets called when either Send button or Enter key is being pressed

@@ -45,7 +45,7 @@ def new_message(chat, sender, message) :
     message = { chat : { 
         "sender" : sender, 
         "message": message, 
-        "timestamp": now
+        "timestamp": str(now)
         }
       }
     messages_ref.push(message)

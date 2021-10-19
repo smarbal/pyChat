@@ -202,7 +202,7 @@ class ChatPage(GridLayout):
     # (kivy passes button object here as well, but we don;t care about it)
     def send_message(self, _):
         #print("send a message!!!")
-        db.new_message(chat_app.contact, chat_app.connected_user, self.new_message.text)
+        db.new_message(chat_app.chat, chat_app.connected_user, self.new_message.text)
 
 
 

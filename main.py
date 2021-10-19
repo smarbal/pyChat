@@ -128,6 +128,15 @@ class ScrollableLabel(ScrollView):
         self.layout.add_widget(self.chat_history)
         self.layout.add_widget(self.scroll_to_point)
 
+    def update_chat_history_layout(self, _=None):
+        # Set layout height to whatever height of chat history text is + 15 pixels
+        # (adds a bit of space at the bottom)
+        # Set chat history label to whatever height of chat history text is
+        # Set width of chat history text to 98 of the label width (adds small margins)
+        self.layout.height = self.chat_history.texture_size[1] + 15
+        self.chat_history.height = self.chat_history.texture_size[1]
+        self.chat_history.text_size = (self.chat_history.width * 0.98, None)
+
     # Methos called externally to add new message to the chat history
     def update_chat_history(self, message):
 
@@ -178,7 +187,7 @@ class ChatPage(GridLayout):
         # We are going to use 1 column and 2 rows
         self.cols = 1
         self.rows = 2
-
+        self.bind(size=self.adjust_fields)
         # First row is going to be occupied by our scrollable label
         # We want it be take 90% of app height
         self.history = ScrollableLabel(height=Window.size[1]*0.9, size_hint_y=None)
@@ -197,12 +206,69 @@ class ChatPage(GridLayout):
         bottom_line.add_widget(self.new_message)
         bottom_line.add_widget(self.send)
         self.add_widget(bottom_line)
-
+        
+        
+        Window.bind(on_key_down=self.on_key_down)
+        Clock.schedule_once(self.focus_text_input, 1)
+        #socket_client.start_listening(self.incoming_message, show_error)
+        
+        chat_app.chat = db.getChatId(chat_app.connected_user, chat_app.contact)
+        self.calls = 0
+        db.messages_ref.listen(self.listener)
     # Gets called when either Send button or Enter key is being pressed
     # (kivy passes button object here as well, but we don;t care about it)
+
+    def listener(self, event):
+        self.calls += 1
+        if self.calls > 1 :  
+            print(event.event_type)  # can be 'put' or 'patch'
+            print(event.path)  # relative to the reference, it seems
+            print(event.data)  # new data at /reference/event.path. None if deleted
+            if event.data[chat_app.chat]["sender"] == chat_app.contact : 
+                self.incoming_message(event.data[chat_app.chat]["sender"], event.data[chat_app.chat]["message"])
+
     def send_message(self, _):
         #print("send a message!!!")
+        self.history.update_chat_history(f'[color=dd2020]{chat_app.connected_user}[/color] > {self.new_message.text}')
         db.new_message(chat_app.chat, chat_app.connected_user, self.new_message.text)
+        self.new_message.text = ''
+        Clock.schedule_once(self.focus_text_input, 0.1)
+
+        
+    def adjust_fields(self, *_):
+    
+        # Chat history height - 90%, but at least 50px for bottom new message/send button part
+        if Window.size[1] * 0.1 < 50:
+            new_height = Window.size[1] - 50
+        else:
+            new_height = Window.size[1] * 0.9
+        self.history.height = new_height
+
+        # New message input width - 80%, but at least 160px for send button
+        if Window.size[0] * 0.2 < 160:
+            new_width = Window.size[0] - 160
+        else:
+            new_width = Window.size[0] * 0.8
+        self.new_message.width = new_width
+
+        # Update chat history layout
+        #self.history.update_chat_history_layout()
+        Clock.schedule_once(self.history.update_chat_history_layout, 0.01)
+
+    def on_key_down(self, instance, keyboard, keycode, text, modifiers):
+        # But we want to take an action only when Enter key is being pressed, and send a message
+        if keycode == 40:
+            self.send_message(None)
+    
+    def focus_text_input(self, _):
+        self.new_message.focus = True
+
+    def incoming_message(self, username, message):
+        # Update chat history with username and message, green color for username
+        self.history.update_chat_history(f'[color=20dd20]{username}[/color] > {message}')
+
+
+
 
 
 

@@ -62,3 +62,8 @@ def user_login(username, password) :
 def chatExists(receiver, sender) : 
     user_chats = users_ref.child(f'{sender}/chats').get()
     return receiver in user_chats.keys() 
+
+
+def getChatId(sender, receiver) : 
+    chatId = users_ref.child(f'{sender}/chats/{receiver}').get()
+    return chatId

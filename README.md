@@ -2,6 +2,7 @@
 Proof of Concept that demonstrates the use of a Firebase Realtime database in a chat application.   
 database.py contains the functions to connect and communicate with the Firebase database. 
 main.py contains the functions to launch the program, show the interface and chat. 
+By Sébastien Martinez Balbuena and Gabriel Lohest
 
 ## Installation 
 First you need to install the Firebase Python SDK :  

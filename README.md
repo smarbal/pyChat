@@ -2,7 +2,9 @@
 Proof of Concept that demonstrates the use of a Firebase Realtime database in a chat application.   
 database.py contains the functions to connect and communicate with the Firebase database. 
 main.py contains the functions to launch the program, show the interface and chat.  
-   
+
+Inspiration for the Kivy UI : https://pythonprogramming.net/chat-application-kivy-application-python-tutorial/  
+
 By Sébastien Martinez Balbuena and Gabriel Lohest.
 
 ## Installation 
